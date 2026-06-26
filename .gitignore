@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environments
+.venv/
+venv/
+env/
+
+# Mypy / ruff cache
+.mypy_cache/
+.ruff_cache/
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Data — never commit patient data
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.feather
+!tests/fixtures/*.csv

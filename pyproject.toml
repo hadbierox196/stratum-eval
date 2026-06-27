@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-stratum-eval = "stratum_eval.cli:main"
+stratum-eval = "stratum.cli:main"
 
 [tool.ruff]
 line-length = 88

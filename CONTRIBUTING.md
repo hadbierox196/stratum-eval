@@ -38,40 +38,52 @@ measures. These are not soft norms — they are enforced in review.
 
 ### New Metric PRs (additional requirements)
 
-Every metric PR must include a completed `METRIC_STANDARDS.md` block in the
+Every metric PR must include a completed Metric Standards Declaration in the
 PR description. Copy the template below and fill every field. Incomplete
 fields are grounds for immediate return without review.
+
+```
 Metric Standards Declaration
-Metric name: 
+=============================
+
+Metric name:
+
 Field 1 — What It Measures
 MEASURES: ...
+
 Field 2 — What It Cannot Measure
 CANNOT_MEASURE_CALIBRATION: yes/no — ...
 CANNOT_MEASURE_SUBGROUP: yes/no — ...
 CANNOT_MEASURE_DISTRIBUTION_SHIFT: yes/no — ...
 OTHER: ...
+
 Field 3 — Required Assumptions
 | ID | Assumption | Testable? | Consequence if violated |
-|----|-----------|-----------|------------------------|
-| A1 | | | |
+|----|-----------|-----------|--------------------------|
+| A1 |           |           |                          |
+
 Field 4 — Graceful Failure Behavior
-| Condition | Expected behavior | Error type |
-|-----------|------------------|------------|
-| All predictions identical | | |
-| All labels identical | | |
-| NaN / Inf in predictions | | |
-| Empty arrays | | |
-| Prevalence < 0.01 or > 0.99 | | |
-| n < minimum_sample_size | | |
+| Condition                     | Expected behavior | Error type |
+|--------------------------------|--------------------|------------|
+| All predictions identical      |                    |            |
+| All labels identical           |                    |            |
+| NaN / Inf in predictions       |                    |            |
+| Empty arrays                   |                    |            |
+| Prevalence < 0.01 or > 0.99    |                    |            |
+| n < minimum_sample_size        |                    |            |
+
 Field 5 — Falsifiability Condition
 FALSE_NEGATIVE: ...
 FALSE_POSITIVE: ...
+
 Field 6 — Computational Complexity
 TIME_COMPLEXITY: O(...)
 SPACE_COMPLEXITY: O(...)
 PARALLELIZABLE: yes/no/partial
 MINIMUM_SAMPLE_SIZE: ...
 RECOMMENDED_SAMPLE_SIZE: ...
+```
+
 ### New Metric PRs — Code Requirements
 
 - [ ] Metric inherits from `BaseMetric` in `stratum_eval/metrics/base.py`
@@ -94,80 +106,41 @@ RECOMMENDED_SAMPLE_SIZE: ...
 
 ## Local Development Setup
 
-git clone https://github.com/<your-org>/stratum-eval.git
+```bash
+git clone https://github.com/hadbierox196/stratum-eval.git
 cd stratum-eval
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pre-commit install
+```
 
-Running the Full Check Suite
+### Running the Full Check Suite
+
+```bash
 ruff check .
 mypy stratum_eval/
 pytest --tb=short -v
 stratum-eval metric lint --all   # once CLI is implemented
-
-Review Philosophy
-Reviewers are expected to push back on Field 2 and Field 5. A limitation
-section that reads as a disclaimer rather than a genuine blind-spot analysis
-will be returned. A falsifiability section that only constructs toy adversarial
-examples without clinical grounding will be returned.
-We would rather have ten well-specified metrics than fifty optimistic ones.
-
+```
 
 ---
 
-## .github/workflows/ci.yml
+## Review Philosophy
 
-```yaml
-name: CI
+Reviewers are expected to push back on Field 2 and Field 5. A limitation
+section that reads as a disclaimer rather than a genuine blind-spot analysis
+will be returned. A falsifiability section that only constructs toy
+adversarial examples without clinical grounding will be returned.
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+We would rather have ten well-specified metrics than fifty optimistic ones.
 
-jobs:
-  lint-and-type-check:
-    name: Ruff + Mypy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+---
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+## Continuous Integration
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Ruff lint
-        run: ruff check .
-
-      - name: Mypy type check
-        run: mypy stratum_eval/
-
-  test:
-    name: Pytest
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Run tests
-        run: pytest tests/ --tb=short -v --cov=stratum_eval --cov-report=term-missing
+CI runs automatically on every push to `main` and on every pull request. The
+workflow lints with Ruff, type-checks with Mypy, and runs the test suite
+across Python 3.10–3.12 with coverage reporting. See
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full
+configuration — it does not need to be duplicated here, but any change to CI
+behavior should be called out in your PR description.

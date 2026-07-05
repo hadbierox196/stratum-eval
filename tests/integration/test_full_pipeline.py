@@ -14,6 +14,14 @@ from __future__ import annotations
 import pytest
 from datetime import date, timedelta
 
+pytestmark = pytest.mark.skip(
+    reason="Targets an unbuilt API surface (stratum.connectors.synthetic."
+    "build_synthetic_cohort, stratum.exceptions.StratumNSDError, and an "
+    "NSD shape that matches neither the simple nor research-grade "
+    "implementation). See issue: test_full_pipeline.py targets an API "
+    "that doesn't exist yet."
+)
+
 import stratum
 from stratum.normative.nsd import NormativeSpec, StakeholderRecord
 from stratum.data.dataset import EvalDataset

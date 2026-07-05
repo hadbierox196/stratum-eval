@@ -194,7 +194,7 @@ def _build_via_files(creds: PhysioNetCredentials, cfg: SepsisQueryConfig) -> "pd
 
     raise NotImplementedError(
         "File-based MIMIC-IV access requires downloading tables via the physionet-client CLI. "
-        "Run: pip install physionet-client && physionet-get -u {username} mimiciv/3.1/ \n"
+        f"Run: pip install physionet-client && physionet-get -u {creds.username} mimiciv/3.1/ \n"
         "Then re-run with the path to your local MIMIC-IV directory. "
         "This backend will be implemented in a future release. "
         "For CI/testing without credentials, use stratum.connectors.synthetic."

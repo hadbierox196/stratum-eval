@@ -86,6 +86,27 @@ def compute_sci(
     X_all = np.concatenate([representations[e] for e in envs], axis=0)
     y_all = np.concatenate([labels[e] for e in envs], axis=0)
 
+    # ── Graceful failure: empty input ────────────────────────────────────────
+    if X_all.shape[0] == 0:
+        return StratumMetricResult(
+            value=None,
+            warnings=[],
+            assumption_violations=[
+                "empty_input: no samples provided across environments; SCI undefined"
+            ],
+        )
+
+    # ── Graceful failure: non-finite values (NaN/Inf) ────────────────────────
+    if not np.all(np.isfinite(X_all)):
+        return StratumMetricResult(
+            value=None,
+            warnings=[],
+            assumption_violations=[
+                "nan_in_representations: representations contain NaN or Inf values; "
+                "SCI undefined. Impute or filter before calling compute_sci."
+            ],
+        )
+
     if X_all.shape[0] < 20:
         warnings.append("low_sample_count: SCI estimate may be unreliable (n < 20)")
 

@@ -1,4 +1,19 @@
-from stratum.normative.nsd import NormativeSpec
-from stratum.normative.validator import validate_nsd_dict
+from stratum.normative.nsd import (
+    NormativeSpecificationDocument,
+    StakeholderRecord,
+    ExclusionRecord,
+)
+from stratum.normative.validator import (
+    load_nsd,
+    validate_nsd_dict,
+    StratumNSDError,
+)
 
-__all__ = ["NormativeSpec", "validate_nsd_dict"]
+__all__ = [
+    "NormativeSpecificationDocument",
+    "StakeholderRecord",
+    "ExclusionRecord",
+    "load_nsd",
+    "validate_nsd_dict",
+    "StratumNSDError",
+]

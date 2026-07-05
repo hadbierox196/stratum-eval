@@ -117,7 +117,7 @@ class BaseMetric(ABC):
         if len(y_true) == 0 or len(y_pred) == 0:
             raise MetricUndefinedError(
                 "Cannot compute metric on empty arrays. "
-                "Received y_true length={len(y_true)}, y_pred length={len(y_pred)}."
+                f"Received y_true length={len(y_true)}, y_pred length={len(y_pred)}."
             )
 
     @staticmethod

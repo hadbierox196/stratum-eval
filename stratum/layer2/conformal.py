@@ -126,6 +126,7 @@ class MondrianConformalPredictor:
         self,
         test_proba: np.ndarray,
         test_groups: np.ndarray,
+        test_y: np.ndarray,
     ) -> MondrianCoverageResult:
         """
         Produce group-conditional prediction sets for test samples.
@@ -139,6 +140,9 @@ class MondrianConformalPredictor:
         ----------
         test_proba  : shape (N_test,) — P(y=1|x) from base model
         test_groups : shape (N_test,) — group identifier per sample
+        test_y      : shape (N_test,) — true binary labels. Required: coverage
+                      cannot be reported without knowing whether the true
+                      label actually fell inside the prediction set.
 
         Returns
         -------
@@ -149,6 +153,12 @@ class MondrianConformalPredictor:
 
         test_proba = np.asarray(test_proba, dtype=float)
         test_groups = np.asarray(test_groups)
+        test_y = np.asarray(test_y, dtype=int)
+        if test_y.shape[0] != test_proba.shape[0]:
+            raise ValueError(
+                f"test_y has {test_y.shape[0]} entries but test_proba has "
+                f"{test_proba.shape[0]}."
+            )
 
         groups = np.unique(test_groups)
         prediction_sets: Dict[str, np.ndarray] = {}
@@ -174,16 +184,20 @@ class MondrianConformalPredictor:
 
             q_hat = self.group_thresholds_[g_str]
             proba_g = test_proba[mask]
+            y_g = test_y[mask]
 
-            # Score for y=1: 1 - proba
+            # Whether label y=1 would be included in this sample's prediction set
+            # (kept for callers that want the actual prediction sets themselves).
             score_y1 = 1 - proba_g
-            in_set = score_y1 <= q_hat  # y=1 included in prediction set
-
-            prediction_sets[g_str] = in_set
+            in_set_y1 = score_y1 <= q_hat
+            prediction_sets[g_str] = in_set_y1
             group_thresholds[g_str] = q_hat
 
-            # Empirical coverage = fraction of test samples where y=1 included
-            group_coverage[g_str] = float(in_set.mean())
+            # Empirical coverage = fraction of samples where the TRUE label's
+            # own nonconformity score falls within the group threshold.
+            true_scores = self._nonconformity_score(proba_g, y_g)
+            true_label_in_set = true_scores <= q_hat
+            group_coverage[g_str] = float(true_label_in_set.mean())
             coverage_gaps[g_str] = abs(group_coverage[g_str] - (1 - self.alpha))
 
         return MondrianCoverageResult(

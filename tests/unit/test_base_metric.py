@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from stratum_eval.metrics.base import BaseMetric, MetricResult, MetricUndefinedError
+from stratum.metrics.base import BaseMetric, MetricResult, MetricUndefinedError
 
 
 class _DummyMetric(BaseMetric):

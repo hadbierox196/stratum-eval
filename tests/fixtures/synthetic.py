@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from stratum_eval.datasets.eval_dataset import EvalDataset
+from stratum.datasets.eval_dataset import EvalDataset
 
 
 def make_binary_dataset(

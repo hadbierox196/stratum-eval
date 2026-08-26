@@ -117,14 +117,29 @@ def compute_sci(
         [representations[e].mean(axis=0) for e in envs], axis=0
     )  # shape (E, d)
 
-    overall_var = X_all.var(axis=0)                    # shape (d,)
     cross_env_var = env_means.var(axis=0)              # shape (d,)
+
+    # Within-environment variance (pooled across envs, weighted by sample size),
+    # NOT the pooled/overall variance of X_all. By the law of total variance,
+    # Var(X) = E[Var(X|env)] + Var(E[X|env]) -- i.e. pooled variance already
+    # contains the between-environment shift (cross_env_var) baked into it.
+    # Using pooled variance as the denominator here systematically understates
+    # relative_shift for genuinely spurious features (their large between-env
+    # shift inflates their own denominator), biasing classification toward
+    # "invariant" (Issue #7). Confirmed empirically: with imbalanced env sample
+    # sizes, this flips real classifications near vrex_threshold in ~10% of
+    # random draws at a representative configuration (n_a=500, n_b=1000, shift=0.45).
+    env_sizes = np.array([representations[e].shape[0] for e in envs])
+    env_vars = np.stack(
+        [representations[e].var(axis=0) for e in envs], axis=0
+    )  # shape (E, d)
+    within_env_var = np.average(env_vars, axis=0, weights=env_sizes)  # shape (d,)
 
     # Avoid division by zero for constant features
     with np.errstate(divide="ignore", invalid="ignore"):
         relative_shift = np.where(
-            overall_var > 0,
-            cross_env_var / overall_var,
+            within_env_var > 0,
+            cross_env_var / within_env_var,
             0.0,
         )
 

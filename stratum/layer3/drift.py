@@ -314,9 +314,14 @@ def bayesian_online_changepoint(
             _studentt_logpdf(x_t, mu_params[l], kappa_params[l], alpha_params[l], beta_params[l])
             for l in range(t)
         ])
-        pred_probs = np.exp(pred_logprobs - pred_logprobs.max())  # numerically stable
-        pred_probs /= pred_probs.sum() if pred_probs.sum() > 0 else 1.0
-        pred_probs = np.exp(pred_logprobs)  # restore true scale for the recursion below
+        # Numerically stable: subtract the max log-prob before exponentiating.
+        # This rescales every entry of pred_probs by the same constant, which
+        # cancels out in the `new_R /= total` renormalization below — so the
+        # stable version is exact, not an approximation. The un-shifted
+        # np.exp(pred_logprobs) previously used here underflows to 0.0 for
+        # long sequences / low-density points, silently zeroing out
+        # detected changepoints (Issue #6).
+        pred_probs = np.exp(pred_logprobs - pred_logprobs.max())
 
         growth_probs = R[t - 1, :t] * pred_probs * (1 - hazard)
         cp_prob = np.sum(R[t - 1, :t] * pred_probs * hazard)
